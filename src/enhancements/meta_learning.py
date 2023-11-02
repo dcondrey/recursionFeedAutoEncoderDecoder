@@ -10,8 +10,14 @@ def hyperparameter_tuning(autoencoder, input_data, output_data):
     output_data: target data.
     """
     def model_builder(hp):
-        # Example: tuning the learning rate
-        lr = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+        lr = hp.Choice('learning_rate', values=[1e-1, 1e-2, 1e-3, 1e-4])
+        dropout_rate = hp.Float('dropout_rate', min_value=0.0, max_value=0.5, step=0.1)
+        latent_dim = hp.Int('latent_dim', min_value=32, max_value=256, step=32)
+        
+        encoder = build_encoder(input_data.shape[1], latent_dim)
+        decoder = build_decoder(latent_dim, input_data.shape[1])
+        
+        autoencoder = autoencoder_with_recursion(input_data.shape[1], latent_dim, 3)
         autoencoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss='binary_crossentropy')
         return autoencoder
 
