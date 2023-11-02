@@ -12,12 +12,14 @@ def hyperparameter_tuning(autoencoder, input_data, output_data):
     def model_builder(hp):
         lr = hp.Choice('learning_rate', values=[1e-1, 1e-2, 1e-3, 1e-4])
         dropout_rate = hp.Float('dropout_rate', min_value=0.0, max_value=0.5, step=0.1)
-        latent_dim = hp.Int('latent_dim', min_value=32, max_value=256, step=32)
+        latent_dim_choices = hp.Choice('latent_dim', values=[32, 64, 128, 256])
+        encoder_layers = [hp.Int(f'encoder_layer_{i}_units', min_value=32, max_value=256, step=32) for i in range(2)]
+        decoder_layers = [hp.Int(f'decoder_layer_{i}_units', min_value=32, max_value=256, step=32) for i in range(2)]
         
-        encoder = build_encoder(input_data.shape[1], latent_dim)
-        decoder = build_decoder(latent_dim, input_data.shape[1])
+        encoder = build_encoder(input_data.shape[1], latent_dim_choices, encoder_layers, dropout_rate)
+        decoder = build_decoder(latent_dim_choices, input_data.shape[1], decoder_layers, dropout_rate)
         
-        autoencoder = autoencoder_with_recursion(input_data.shape[1], latent_dim, 3)
+        autoencoder = autoencoder_with_recursion(input_data.shape[1], latent_dim_choices, 3)
         autoencoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss='binary_crossentropy')
         return autoencoder
 
